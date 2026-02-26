@@ -307,7 +307,7 @@ export default function App() {
 
       {/* Info correlativas - Contenedor con altura fija para evitar Layout Shift */}
       <div style={{ 
-        minHeight: "62px", /* Reserva el espacio exacto que ocupa la caja */
+        minHeight: "62px", 
         margin: "10px 24px",
       }}>
         {focusMat && (
@@ -315,7 +315,6 @@ export default function App() {
             padding: "10px 18px",
             background: "#111128", border: "1px solid #2a2a5a", borderRadius: "8px",
             display: "flex", gap: "20px", alignItems: "center", flexWrap: "wrap",
-            /* Le agregamos una pequeña animación de entrada para que quede más prolijo */
             animation: "fadeIn 0.2s ease-in-out" 
           }}>
             <div>
