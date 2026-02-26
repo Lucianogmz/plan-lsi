@@ -106,7 +106,7 @@ function LoginScreen({ onAuth }) {
     <div style={{
       minHeight: "100vh", background: "#0a0a14", display: "flex",
       alignItems: "center", justifyContent: "center",
-      fontFamily: "'Space Mono', monospace",
+      fontFamily: "'Inter', 'Segoe UI', Roboto, Helvetica, sans-serif",
     }}>
       <div style={{
         width: "360px", padding: "40px",
