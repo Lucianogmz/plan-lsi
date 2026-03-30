@@ -1,6 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
-import { createClient } from "@supabase/supabase-js";
-import AdminPanel from "./Admin";
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm";
 
 const SUPABASE_URL = "https://ztzqjwvokdiitrujhhqk.supabase.co";
 const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp0enFqd3Zva2RpaXRydWpoaHFrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE5NDc4NjQsImV4cCI6MjA4NzUyMzg2NH0.Gc2priBj2O_9C9iei8AqsogEDa734T8u5REylYOT37A";
@@ -46,12 +45,14 @@ const MATERIAS = [
   { id: "535", codigo: "340535", nombre: "Optativa V", anio: 5, cuatrimestre: "C2", correlativas: ["423"] },
 ];
 
+
+const ESTADOS = { pendiente: "pendiente", regular: "regular", aprobada: "aprobada" };
 const ANIOS = [1, 2, 3, 4, 5];
 const ANIO_LABELS = ["1° Año", "2° Año", "3° Año", "4° Año", "5° Año"];
 
 const COLORES = {
   pendiente:   { bg: "#1a1a2e", border: "#3a3a5c", text: "#8888aa", badge: "#2a2a4e" },
-  regular:     { bg: "#1a2a1a", border: "#4a8a4a", text: "#88cc88", badge: "#2a4a2a" },
+  regular:     { bg: "#2d2a15", border: "#b89b25", text: "#ffcc00", badge: "#544614" }, 
   aprobada:    { bg: "#0a2a1a", border: "#00ff88", text: "#00ff88", badge: "#004422" },
   puedeCursar: { bg: "#111133", border: "#4488ff", text: "#88aaff", badge: "#111133" },
   noPuede:     { bg: "#1a1a2e", border: "#2a2a4a", text: "#444466", badge: "#1a1a2e" },
@@ -70,10 +71,13 @@ function getEstadoVisual(mat, estados) {
   return "noPuede";
 }
 
+// ──────────────────────────────────────────────
+// Pantalla de Login
+// ──────────────────────────────────────────────
 function LoginScreen({ onAuth }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [modo, setModo] = useState("login");
+  const [modo, setModo] = useState("login"); // login | register
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [mensaje, setMensaje] = useState("");
@@ -99,31 +103,63 @@ function LoginScreen({ onAuth }) {
   };
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0a0a14", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "'Space Mono', monospace" }}>
-      <div style={{ width: "360px", padding: "40px", background: "#0d0d1f", border: "1px solid #2a2a4a", borderRadius: "12px" }}>
+    <div style={{
+      minHeight: "100vh", background: "#0a0a14", display: "flex",
+      alignItems: "center", justifyContent: "center",
+      fontFamily: "'Inter', 'Segoe UI', Roboto, Helvetica, sans-serif",
+    }}>
+      <div style={{
+        width: "360px", padding: "40px",
+        background: "#0d0d1f", border: "1px solid #2a2a4a",
+        borderRadius: "12px",
+      }}>
         <div style={{ fontSize: "10px", letterSpacing: "4px", color: "#4466cc", marginBottom: "8px" }}>UADER · FCyT</div>
         <h2 style={{ color: "#eeeeff", margin: "0 0 8px", fontSize: "18px" }}>Plan de Estudios</h2>
         <p style={{ color: "#556", fontSize: "11px", margin: "0 0 28px" }}>Licenciatura en Sistemas de Información</p>
+
         <div style={{ marginBottom: "16px" }}>
           <label style={{ fontSize: "10px", color: "#4466cc", letterSpacing: "2px", display: "block", marginBottom: "6px" }}>EMAIL</label>
-          <input value={email} onChange={e => setEmail(e.target.value)} placeholder="tu@email.com"
-            style={{ width: "100%", padding: "10px 12px", background: "#1a1a2e", border: "1px solid #3a3a5c", borderRadius: "6px", color: "#ccc", fontFamily: "inherit", fontSize: "12px", boxSizing: "border-box" }} />
+          <input
+            value={email} onChange={e => setEmail(e.target.value)}
+            placeholder="tu@email.com"
+            style={{
+              width: "100%", padding: "10px 12px", background: "#1a1a2e",
+              border: "1px solid #3a3a5c", borderRadius: "6px", color: "#ccc",
+              fontFamily: "inherit", fontSize: "12px", boxSizing: "border-box",
+            }}
+          />
         </div>
         <div style={{ marginBottom: "24px" }}>
           <label style={{ fontSize: "10px", color: "#4466cc", letterSpacing: "2px", display: "block", marginBottom: "6px" }}>CONTRASEÑA</label>
-          <input type="password" value={password} onChange={e => setPassword(e.target.value)}
-            placeholder="mínimo 6 caracteres" onKeyDown={e => e.key === "Enter" && handle()}
-            style={{ width: "100%", padding: "10px 12px", background: "#1a1a2e", border: "1px solid #3a3a5c", borderRadius: "6px", color: "#ccc", fontFamily: "inherit", fontSize: "12px", boxSizing: "border-box" }} />
+          <input
+            type="password" value={password} onChange={e => setPassword(e.target.value)}
+            placeholder="mínimo 6 caracteres"
+            onKeyDown={e => e.key === "Enter" && handle()}
+            style={{
+              width: "100%", padding: "10px 12px", background: "#1a1a2e",
+              border: "1px solid #3a3a5c", borderRadius: "6px", color: "#ccc",
+              fontFamily: "inherit", fontSize: "12px", boxSizing: "border-box",
+            }}
+          />
         </div>
+
         {error && <div style={{ fontSize: "11px", color: "#ff6666", marginBottom: "16px", padding: "8px", background: "#2a1a1a", borderRadius: "4px" }}>{error}</div>}
         {mensaje && <div style={{ fontSize: "11px", color: "#00ff88", marginBottom: "16px", padding: "8px", background: "#0a2a1a", borderRadius: "4px" }}>{mensaje}</div>}
-        <button onClick={handle} disabled={loading}
-          style={{ width: "100%", padding: "12px", background: loading ? "#2a2a4a" : "#2233aa", border: "none", borderRadius: "6px", color: "#eeeeff", fontFamily: "inherit", fontSize: "12px", cursor: loading ? "default" : "pointer", letterSpacing: "1px", fontWeight: "700" }}>
+
+        <button onClick={handle} disabled={loading} style={{
+          width: "100%", padding: "12px", background: loading ? "#2a2a4a" : "#2233aa",
+          border: "none", borderRadius: "6px", color: "#eeeeff",
+          fontFamily: "inherit", fontSize: "12px", cursor: loading ? "default" : "pointer",
+          letterSpacing: "1px", fontWeight: "700",
+        }}>
           {loading ? "..." : modo === "login" ? "INGRESAR" : "CREAR CUENTA"}
         </button>
+
         <div style={{ textAlign: "center", marginTop: "16px" }}>
-          <span onClick={() => { setModo(modo === "login" ? "register" : "login"); setError(""); setMensaje(""); }}
-            style={{ fontSize: "11px", color: "#4466cc", cursor: "pointer", textDecoration: "underline" }}>
+          <span
+            onClick={() => { setModo(modo === "login" ? "register" : "login"); setError(""); setMensaje(""); }}
+            style={{ fontSize: "11px", color: "#4466cc", cursor: "pointer", textDecoration: "underline" }}
+          >
             {modo === "login" ? "¿No tenés cuenta? Registrate" : "¿Ya tenés cuenta? Ingresá"}
           </span>
         </div>
@@ -132,48 +168,53 @@ function LoginScreen({ onAuth }) {
   );
 }
 
+// ──────────────────────────────────────────────
+// App principal
+// ──────────────────────────────────────────────
 export default function App() {
   const [user, setUser] = useState(null);
-  const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const [estados, setEstados] = useState({});
   const [saving, setSaving] = useState(false);
   const [hover, setHover] = useState(null);
   const [selected, setSelected] = useState(null);
+  const [filtroActivo, setFiltroActivo] = useState(false);
 
+  // Verificar sesión al arrancar
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
         setUser(session.user);
-        inicializar(session.user);
+        cargarEstados(session.user.id);
       } else {
         setLoading(false);
       }
     });
-    const { data: listener } = supabase.auth.onAuthStateChange((_e, session) => {
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) setUser(session.user);
-      else { setUser(null); setIsAdmin(false); }
+      else setUser(null);
     });
     return () => listener.subscription.unsubscribe();
   }, []);
 
-  const inicializar = async (u) => {
-    const [{ data: adminData }, { data: estadosData }] = await Promise.all([
-      supabase.from("admins").select("user_id").eq("user_id", u.id).single(),
-      supabase.from("user_estados").select("estados").eq("user_id", u.id).single(),
-    ]);
-    if (adminData) setIsAdmin(true);
-    if (estadosData?.estados) setEstados(estadosData.estados);
+  const cargarEstados = async (uid) => {
+    const { data, error } = await supabase
+      .from("user_estados")
+      .select("estados")
+      .eq("user_id", uid)
+      .single();
+    if (data?.estados) setEstados(data.estados);
     setLoading(false);
   };
 
-  const guardarEstados = async (nuevos) => {
+  const guardarEstados = async (nuevosEstados) => {
     if (!user) return;
     setSaving(true);
-    await supabase.from("user_estados").upsert(
-      { user_id: user.id, estados: nuevos, updated_at: new Date().toISOString() },
-      { onConflict: "user_id" }
-    );
+    await supabase.from("user_estados").upsert({
+      user_id: user.id,
+      estados: nuevosEstados,
+      updated_at: new Date().toISOString(),
+    }, { onConflict: "user_id" });
     setSaving(false);
   };
 
@@ -190,7 +231,6 @@ export default function App() {
   const logout = async () => {
     await supabase.auth.signOut();
     setUser(null);
-    setIsAdmin(false);
     setEstados({});
   };
 
@@ -200,25 +240,30 @@ export default function App() {
     </div>
   );
 
-  if (!user) return <LoginScreen onAuth={(u) => { setUser(u); inicializar(u); }} />;
-
-  if (isAdmin) return <AdminPanel supabase={supabase} user={user} onLogout={logout} />;
+  if (!user) return <LoginScreen onAuth={(u) => { setUser(u); cargarEstados(u.id); }} />;
 
   const aprobadas = Object.values(estados).filter(e => e === "aprobada").length;
   const regulares = Object.values(estados).filter(e => e === "regular").length;
   const total = MATERIAS.length;
   const progreso = Math.round((aprobadas / total) * 100);
+
   const hoveredMat = MATERIAS.find(m => m.id === hover);
   const selectedMat = MATERIAS.find(m => m.id === selected);
   const focusMat = selectedMat || hoveredMat;
   const highlighted = focusMat ? new Set([focusMat.id, ...focusMat.correlativas]) : null;
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0a0a14", fontFamily: "'Space Mono', 'Courier New', monospace", color: "#ccc" }}>
+    <div style={{ minHeight: "100vh", background: "#0a0a14", fontFamily: "'Inter', 'Segoe UI', Roboto, Helvetica, sans-serif", color: "#ccc" }}>
 
-      <div style={{ background: "linear-gradient(135deg, #0d0d1f 0%, #111128 100%)", borderBottom: "1px solid #2a2a4a", padding: "16px 24px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "12px" }}>
+      {/* Header */}
+      <div style={{
+        background: "linear-gradient(135deg, #0d0d1f 0%, #111128 100%)",
+        borderBottom: "1px solid #2a2a4a",
+        padding: "16px 24px",
+        display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "12px",
+      }}>
         <div>
-          <div style={{ fontSize: "9px", letterSpacing: "4px", color: "#4466cc", marginBottom: "3px" }}>UADER · FCyT · CDU</div>
+          <div style={{ fontSize: "9px", letterSpacing: "4px", color: "#4466cc", marginBottom: "3px" }}>UADER · FCyT</div>
           <h1 style={{ margin: 0, fontSize: "16px", fontWeight: "700", color: "#eeeeff" }}>Licenciatura en Sistemas de Información</h1>
           <div style={{ fontSize: "10px", color: "#556", marginTop: "2px" }}>
             {user.email} {saving && <span style={{ color: "#4466cc" }}>· guardando...</span>}
@@ -226,81 +271,145 @@ export default function App() {
         </div>
         <div style={{ display: "flex", gap: "20px", alignItems: "center" }}>
           <Stat label="Aprobadas" value={aprobadas} color="#00ff88" />
-          <Stat label="Regulares" value={regulares} color="#4a8a4a" />
+          <Stat label="Regulares" value={regulares} color="#ffcc00" />
           <div style={{ textAlign: "center" }}>
             <div style={{ fontSize: "26px", fontWeight: "700", color: "#4466cc", lineHeight: 1 }}>{progreso}%</div>
             <div style={{ fontSize: "9px", color: "#556", marginTop: "2px" }}>completado</div>
           </div>
-          <button onClick={logout} style={{ padding: "6px 14px", background: "transparent", border: "1px solid #3a3a5c", color: "#556", borderRadius: "4px", cursor: "pointer", fontFamily: "inherit", fontSize: "10px" }}>
-            SALIR
-          </button>
+          <button onClick={logout} style={{
+            padding: "6px 14px", background: "transparent", border: "1px solid #3a3a5c",
+            color: "#556", borderRadius: "4px", cursor: "pointer", fontFamily: "inherit", fontSize: "10px",
+          }}>SALIR</button>
         </div>
       </div>
 
-      <div style={{ padding: "8px 24px", display: "flex", gap: "16px", borderBottom: "1px solid #1a1a2e", flexWrap: "wrap", alignItems: "center" }}>
+      {/* Legend */}
+      <div style={{ padding: "16px 24px", display: "flex", gap: "24px", borderBottom: "1px solid #1a1a2e", flexWrap: "wrap", alignItems: "center" }}>
         <LegendItem color="#3a3a5c" label="Pendiente" />
         <LegendItem color="#00ff88" label="Aprobada" />
-        <LegendItem color="#4a8a4a" label="Regular" />
+        <LegendItem color="#ffcc00" label="Regular" />
         <LegendItem color="#4488ff" label="Puede cursar" />
-        <span style={{ fontSize: "10px", color: "#333355", marginLeft: "8px" }}>Click = cambiar estado · Hover = ver correlativas</span>
+        {/* BOTÓN DE FILTRO */}
+        <button 
+          onClick={() => setFiltroActivo(!filtroActivo)}
+          style={{
+            marginLeft: "auto", padding: "6px 12px", borderRadius: "6px",
+            background: filtroActivo ? "#4488ff" : "transparent",
+            color: filtroActivo ? "#ffffff" : "#88aaff",
+            border: "1px solid #4488ff", cursor: "pointer",
+            fontSize: "10px", fontWeight: "700", letterSpacing: "1px",
+            transition: "all 0.2s ease"
+          }}
+        >
+          {filtroActivo ? "MOSTRANDO: QUÉ PUEDO CURSAR ✕" : "FILTRAR: QUÉ PUEDO CURSAR"}
+        </button>
       </div>
 
-      {focusMat && (
-        <div style={{ margin: "10px 24px", padding: "10px 18px", background: "#111128", border: "1px solid #2a2a5a", borderRadius: "8px", display: "flex", gap: "20px", alignItems: "center", flexWrap: "wrap" }}>
-          <div>
-            <span style={{ fontSize: "9px", color: "#4466cc", letterSpacing: "2px" }}>CORRELATIVAS DE </span>
-            <span style={{ fontSize: "13px", color: "#eeeeff", fontWeight: "700" }}>{focusMat.nombre}</span>
+      {/* Info correlativas - Contenedor con altura fija para evitar Layout Shift */}
+      <div style={{ 
+        minHeight: "62px", 
+        margin: "10px 24px",
+      }}>
+        {focusMat && (
+          <div style={{
+            padding: "10px 18px",
+            background: "#111128", border: "1px solid #2a2a5a", borderRadius: "8px",
+            display: "flex", gap: "20px", alignItems: "center", flexWrap: "wrap",
+            animation: "fadeIn 0.2s ease-in-out" 
+          }}>
+            <div>
+              <span style={{ fontSize: "9px", color: "#4466cc", letterSpacing: "2px" }}>CORRELATIVAS DE </span>
+              <span style={{ fontSize: "13px", color: "#eeeeff", fontWeight: "700" }}>{focusMat.nombre}</span>
+            </div>
+            <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+              {focusMat.correlativas.length === 0
+                ? <span style={{ fontSize: "11px", color: "#556" }}>Sin correlativas — libre</span>
+                : focusMat.correlativas.map(cid => {
+                    const m = MATERIAS.find(x => x.id === cid);
+                    const e = estados[cid] || "pendiente";
+                    return (
+                      <span key={cid} style={{
+                        fontSize: "11px", padding: "3px 10px", borderRadius: "20px",
+                        border: `1px solid ${e === "aprobada" ? "#00ff88" : e === "regular" ? "#ffcc00" : "#3a3a5c"}`,
+                        color: e === "aprobada" ? "#00ff88" : e === "regular" ? "#ffcc00" : "#556",
+                      }}>{m?.nombre}</span>
+                    );
+                  })}
+            </div>
+            {selected && (
+              <button onClick={() => setSelected(null)} style={{
+                marginLeft: "auto", fontSize: "10px", padding: "3px 10px",
+                background: "transparent", border: "1px solid #3a3a5c", color: "#556",
+                borderRadius: "4px", cursor: "pointer",
+              }}>✕</button>
+            )}
           </div>
-          <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
-            {focusMat.correlativas.length === 0
-              ? <span style={{ fontSize: "11px", color: "#556" }}>Sin correlativas — libre</span>
-              : focusMat.correlativas.map(cid => {
-                  const m = MATERIAS.find(x => x.id === cid);
-                  const e = estados[cid] || "pendiente";
-                  return (
-                    <span key={cid} style={{ fontSize: "11px", padding: "3px 10px", borderRadius: "20px", border: `1px solid ${e === "aprobada" ? "#00ff88" : e === "regular" ? "#4a8a4a" : "#3a3a5c"}`, color: e === "aprobada" ? "#00ff88" : e === "regular" ? "#88cc88" : "#556" }}>
-                      {m?.nombre}
-                    </span>
-                  );
-                })}
-          </div>
-          {selected && (
-            <button onClick={() => setSelected(null)} style={{ marginLeft: "auto", fontSize: "10px", padding: "3px 10px", background: "transparent", border: "1px solid #3a3a5c", color: "#556", borderRadius: "4px", cursor: "pointer" }}>✕</button>
-          )}
-        </div>
-      )}
-
+        )}
+      </div>
+      
+       {/* Probando git */}
+      {/* Materias por año */}
       <div style={{ padding: "12px 24px 24px" }}>
         {ANIOS.map((anio, ai) => {
-          const materias = MATERIAS.filter(m => m.anio === anio);
+          // 1. Obtenemos todas las materias del año
+          const materiasDelAnio = MATERIAS.filter(m => m.anio === anio);
+          
+          // 2. Aplicamos el filtro si está activo
+          const materiasAMostrar = filtroActivo 
+            ? materiasDelAnio.filter(mat => getEstadoVisual(mat, estados) === "puedeCursar")
+            : materiasDelAnio;
+
+          // 3. Si el filtro está activo y no hay materias en este año, no dibujamos el bloque del año
+          if (filtroActivo && materiasAMostrar.length === 0) return null;
+
           return (
             <div key={anio} style={{ marginBottom: "10px" }}>
               <div style={{ fontSize: "9px", letterSpacing: "3px", color: "#3a3a6a", marginBottom: "6px", textTransform: "uppercase" }}>
                 ── {ANIO_LABELS[ai]}
               </div>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(195px, 1fr))", gap: "6px" }}>
-                {materias.map(mat => {
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))", gap: "12px" }}>
+                {materiasAMostrar.map(mat => {
                   const ev = getEstadoVisual(mat, estados);
                   const col = COLORES[ev];
                   const isHighlighted = highlighted ? highlighted.has(mat.id) : true;
                   const isSelected = selected === mat.id;
                   const est = estados[mat.id] || "pendiente";
+
                   return (
-                    <div key={mat.id}
+                    <div
+                      key={mat.id}
                       onClick={() => ciclarEstado(mat.id)}
                       onMouseEnter={() => setHover(mat.id)}
                       onMouseLeave={() => setHover(null)}
                       onContextMenu={e => { e.preventDefault(); setSelected(mat.id === selected ? null : mat.id); }}
-                      style={{ padding: "10px 13px", borderRadius: "8px", background: col.bg, border: `1px solid ${isSelected ? "#ffffff33" : col.border}`, cursor: "pointer", opacity: isHighlighted ? 1 : 0.2, transition: "all 0.12s ease", outline: isSelected ? "2px solid #4466cc" : "none", outlineOffset: "2px", transform: hover === mat.id ? "translateY(-1px)" : "none", boxShadow: hover === mat.id ? `0 4px 16px ${col.border}33` : "none" }}
+                      style={{
+                        padding: "10px 13px", borderRadius: "8px",
+                        background: col.bg,
+                        border: `1px solid ${isSelected ? "#ffffff33" : col.border}`,
+                        cursor: "pointer",
+                        opacity: isHighlighted ? 1 : 0.2,
+                        transition: "opacity 0.2s ease-out, box-shadow 0.2s ease, border-color 0.2s ease",
+                        willChange: "opacity",
+                        outline: isSelected ? "2px solid #4466cc" : "none",
+                        outlineOffset: "2px",
+                        transform: "none",
+                        boxShadow: hover === mat.id ? `0 0 15px ${col.border}66` : "none",
+                        pointerEvents: "auto",
+                      }}
                     >
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "6px" }}>
-                        <div style={{ fontSize: "12px", color: col.text, fontWeight: "600", lineHeight: "1.3" }}>{mat.nombre}</div>
-                        <div style={{ fontSize: "8px", padding: "2px 5px", borderRadius: "3px", background: col.badge, color: col.text, whiteSpace: "nowrap", textTransform: "uppercase", flexShrink: 0 }}>
-                          {est === "aprobada" ? "✓ APR" : est === "regular" ? "REG" : ev === "puedeCursar" ? "→ OK" : "⊘"}
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "8px" }}>
+                        <div style={{ fontSize: "14px", color: col.text, fontWeight: "600", lineHeight: "1.4" }}>
+                          {mat.nombre}
                         </div>
+                         <div style={{
+                          fontSize: "9px", padding: "4px 6px", borderRadius: "4px", fontWeight: "700",
+                          background: col.badge, color: col.text,
+                          whiteSpace: "nowrap", textTransform: "uppercase", flexShrink: 0,
+                        }}>
+                          {est === "aprobada" ? "✓ APR" : est === "regular" ? "REG" : ev === "puedeCursar" ? "→ OK" : "⊘"}
+              </div>
                       </div>
-                      <div style={{ fontSize: "9px", color: "#3a3a6a", marginTop: "5px", display: "flex", gap: "8px" }}>
-                        <span>{mat.codigo}</span>
+                      <div style={{ fontSize: "11px", color: "#3a3a6a", marginTop: "5px", display: "flex", gap: "8px" }}>
                         <span>{mat.cuatrimestre}</span>
                         {mat.correlativas.length > 0 && <span>{mat.correlativas.length} correl.</span>}
                       </div>
@@ -313,6 +422,7 @@ export default function App() {
         })}
       </div>
 
+      {/* Barra progreso */}
       <div style={{ padding: "0 24px 32px" }}>
         <div style={{ fontSize: "9px", color: "#3a3a6a", marginBottom: "5px", letterSpacing: "2px" }}>PROGRESO GENERAL</div>
         <div style={{ height: "5px", background: "#1a1a2e", borderRadius: "3px", overflow: "hidden" }}>
@@ -320,7 +430,6 @@ export default function App() {
         </div>
         <div style={{ fontSize: "10px", color: "#556", marginTop: "4px" }}>{aprobadas} de {total} materias aprobadas</div>
       </div>
-
     </div>
   );
 }
@@ -336,8 +445,8 @@ function Stat({ label, value, color }) {
 
 function LegendItem({ color, label }) {
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: "5px", fontSize: "10px", color: "#556" }}>
-      <div style={{ width: "10px", height: "10px", borderRadius: "2px", border: `2px solid ${color}`, background: color + "22" }} />
+    <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "13px", color: "#aaaaee", fontWeight: "500" }}>
+      <div style={{ width: "16px", height: "16px", borderRadius: "4px", border: `2px solid ${color}`, background: color + "22" }} />
       {label}
     </div>
   );
