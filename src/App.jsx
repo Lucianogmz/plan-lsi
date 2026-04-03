@@ -45,22 +45,36 @@ export default function App() {
   const [materias, setMaterias] = useState([]);
 
   // 3. Traemos las materias de PostgreSQL local
-  const cargarTodoLocal = async () => {
+const cargarTodoLocal = async () => {
     try {
       const resMat = await fetch('http://localhost:3001/api/materias');
       const dataMat = await resMat.json();
       
-      // Sanitizamos los datos: si correlativas viene null desde la DB, lo hacemos un array vacío
       const materiasLimpias = dataMat.map(m => ({
         ...m,
         correlativas: m.correlativas || []
       }));
       
-      setMaterias(materiasLimpias);
+      setMaterias(materiasLimpias); 
+
+      const resProg = await fetch(`http://localhost:3001/api/progreso/${user.id}`);
+      
+      if (resProg.ok) {
+        const dataProg = await resProg.json();
+        
+        if (Array.isArray(dataProg)) {
+          const estadosDesdeDB = {};
+          dataProg.forEach(item => {
+            estadosDesdeDB[item.materia_id] = item.estado;
+          });
+          setEstados(estadosDesdeDB);
+        }
+      }
+
       setLoading(false);
     } catch (error) {
       console.error("Error cargando datos:", error);
-      setLoading(false); // Para que no se quede girando infinito si hay error
+      setLoading(false);
     }
   };
 
@@ -69,17 +83,36 @@ export default function App() {
   }, []);
 
   // 4. Simulamos el guardado (próximo paso a conectar)
-  const guardarEstados = async (nuevosEstados) => {
-    console.log("Simulando guardado local...", nuevosEstados);
+  // 1. Nueva función que envía un solo cambio al backend
+  const guardarEstadoEnDB = async (materiaId, nuevoEstado) => {
+    try {
+      setSaving(true);
+      await fetch('http://localhost:3001/api/progreso', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          user_id: user.id, // El ID 1 de nuestro usuario simulado
+          materia_id: materiaId,
+          estado: nuevoEstado
+        })
+      });
+      setSaving(false);
+    } catch (error) {
+      console.error("Error guardando en la DB:", error);
+      setSaving(false);
+    }
   };
 
+  // 2. Actualizamos ciclarEstado para que use la nueva función
   const ciclarEstado = useCallback((id) => {
     setEstados(prev => {
       const actual = prev[id] || "pendiente";
       const siguiente = actual === "pendiente" ? "regular" : actual === "regular" ? "aprobada" : "pendiente";
-      const nuevo = { ...prev, [id]: siguiente };
-      guardarEstados(nuevo);
-      return nuevo;
+      
+      // Llamamos al backend para guardar este cambio específico
+      guardarEstadoEnDB(id, siguiente);
+      
+      return { ...prev, [id]: siguiente };
     });
   }, [user]);
 
