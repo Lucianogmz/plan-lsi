@@ -50,6 +50,12 @@ const cargarTodoLocal = async () => {
       const resMat = await fetch('http://localhost:3001/api/materias');
       const dataMat = await resMat.json();
       
+        console.log("Muestra de correlativas:", dataMat.slice(0,3).map(m => ({
+    nombre: m.nombre,
+    correlativas: m.correlativas,
+    tipo: typeof m.correlativas
+  })));
+
       const materiasLimpias = dataMat.map(m => ({
         ...m,
         correlativas: m.correlativas || []
@@ -137,7 +143,15 @@ const cargarTodoLocal = async () => {
   const hoveredMat = materias.find(m => m.id === hover);
   const selectedMat = materias.find(m => m.id === selected);
   const focusMat = selectedMat || hoveredMat;
-  const highlighted = focusMat ? new Set([focusMat.id, ...(focusMat.correlativas || [])]) : null;
+  const highlighted = focusMat
+  ? new Set([
+      focusMat.id,
+      ...(focusMat.correlativas || []),                          
+      ...materias
+        .filter(m => (m.correlativas || []).includes(focusMat.id)) // las que desbloquea
+        .map(m => m.id),
+    ])
+  : null;
 
   return (
     <div style={{ minHeight: "100vh", background: "#0a0a14", fontFamily: "'Inter', 'Segoe UI', Roboto, Helvetica, sans-serif", color: "#ccc" }}>
@@ -263,9 +277,24 @@ const cargarTodoLocal = async () => {
                       style={{
                         padding: "10px 13px", borderRadius: "8px",
                         background: col.bg,
-                        border: `1px solid ${isSelected ? "#ffffff33" : col.border}`,
+                        border: isSelected
+                        ? "2px solid #ffffff55"
+                        : highlighted && highlighted.has(mat.id) && mat.id !== focusMat?.id
+                          ? `1px solid ${col.border}cc`     // borde más vivo en relacionadas
+                          : `1px solid ${col.border}`,
+                      boxShadow: hover === mat.id
+                        ? `0 0 20px ${col.border}88`
+                        : highlighted && highlighted.has(mat.id) && mat.id !== focusMat?.id
+                          ? `0 0 8px ${col.border}44`       // glow suave en relacionadas
+                          : "none",
                         cursor: "pointer",
-                        opacity: isHighlighted ? 1 : 0.2,
+                        opacity: !highlighted
+                              ? 0.55                              // estado neutro: todo semi-apagado
+                              : mat.id === focusMat?.id
+                                ? 1                               // la que hovereo: 100%
+                                : highlighted.has(mat.id)
+                                  ? 0.85                          // relacionadas: casi completo
+                                  : 0.12,   
                         transition: "opacity 0.2s ease-out, box-shadow 0.2s ease, border-color 0.2s ease",
                         outline: isSelected ? "2px solid #4466cc" : "none",
                         outlineOffset: "2px",
