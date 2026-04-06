@@ -58,6 +58,7 @@ const cargarTodoLocal = async () => {
 
       const materiasLimpias = dataMat.map(m => ({
         ...m,
+        id: Number(m.id),
         correlativas: m.correlativas || []
       }));
       
@@ -298,7 +299,6 @@ const cargarTodoLocal = async () => {
                         transition: "opacity 0.2s ease-out, box-shadow 0.2s ease, border-color 0.2s ease",
                         outline: isSelected ? "2px solid #4466cc" : "none",
                         outlineOffset: "2px",
-                        boxShadow: hover === mat.id ? `0 0 15px ${col.border}66` : "none",
                       }}
                     >
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "8px" }}>
