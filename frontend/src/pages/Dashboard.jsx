@@ -1,4 +1,7 @@
 import { useState, useCallback, useEffect } from "react";
+import Stat from "../components/Stat";
+import LegendItem from "../components/LegendItem";
+import { fetchMaterias, fetchProgreso, saveProgreso } from "../services/api";
 
 // Constantes globales
 const ESTADOS = { pendiente: "pendiente", regular: "regular", aprobada: "aprobada" };
@@ -15,7 +18,6 @@ const COLORES = {
 
 // Funciones de ayuda
 function puedeSerCursada(mat, estados) {
-  // Verificamos si la propiedad correlativas existe y es un array
   if (!mat.correlativas || mat.correlativas.length === 0) return true;
   return mat.correlativas.every(c => estados[c] === "regular" || estados[c] === "aprobada");
 }
@@ -28,11 +30,7 @@ function getEstadoVisual(mat, estados) {
   return "noPuede";
 }
 
-// ──────────────────────────────────────────────
-// App principal
-// ──────────────────────────────────────────────
-export default function App() {
-  // 1. Iniciamos con un usuario simulado
+export default function Dashboard() {
   const [user, setUser] = useState({ id: 1, email: "estudiante@uader.local" });
   const [loading, setLoading] = useState(true);
   const [estados, setEstados] = useState({});
@@ -41,41 +39,27 @@ export default function App() {
   const [selected, setSelected] = useState(null);
   const [filtroActivo, setFiltroActivo] = useState(false);
   
-  // 2. Estado para las materias de la base de datos
   const [materias, setMaterias] = useState([]);
 
-  // 3. Traemos las materias de PostgreSQL local
-const cargarTodoLocal = async () => {
+  const cargarTodoLocal = async () => {
     try {
-      const resMat = await fetch('http://localhost:3001/api/materias');
-      const dataMat = await resMat.json();
+      const dataMat = await fetchMaterias();
       
-        console.log("Muestra de correlativas:", dataMat.slice(0,3).map(m => ({
-    nombre: m.nombre,
-    correlativas: m.correlativas,
-    tipo: typeof m.correlativas
-  })));
-
       const materiasLimpias = dataMat.map(m => ({
         ...m,
         id: Number(m.id),
         correlativas: m.correlativas || []
       }));
-      
       setMaterias(materiasLimpias); 
 
-      const resProg = await fetch(`http://localhost:3001/api/progreso/${user.id}`);
+      const dataProg = await fetchProgreso(user.id);
       
-      if (resProg.ok) {
-        const dataProg = await resProg.json();
-        
-        if (Array.isArray(dataProg)) {
-          const estadosDesdeDB = {};
-          dataProg.forEach(item => {
-            estadosDesdeDB[item.materia_id] = item.estado;
-          });
-          setEstados(estadosDesdeDB);
-        }
+      if (Array.isArray(dataProg)) {
+        const estadosDesdeDB = {};
+        dataProg.forEach(item => {
+          estadosDesdeDB[item.materia_id] = item.estado;
+        });
+        setEstados(estadosDesdeDB);
       }
 
       setLoading(false);
@@ -89,20 +73,10 @@ const cargarTodoLocal = async () => {
     cargarTodoLocal();
   }, []);
 
-  // 4. Simulamos el guardado (próximo paso a conectar)
-  // 1. Nueva función que envía un solo cambio al backend
   const guardarEstadoEnDB = async (materiaId, nuevoEstado) => {
     try {
       setSaving(true);
-      await fetch('http://localhost:3001/api/progreso', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          user_id: user.id, // El ID 1 de nuestro usuario simulado
-          materia_id: materiaId,
-          estado: nuevoEstado
-        })
-      });
+      await saveProgreso(user.id, materiaId, nuevoEstado);
       setSaving(false);
     } catch (error) {
       console.error("Error guardando en la DB:", error);
@@ -110,17 +84,16 @@ const cargarTodoLocal = async () => {
     }
   };
 
-  // 2. Actualizamos ciclarEstado para que use la nueva función
   const ciclarEstado = useCallback((id) => {
     setEstados(prev => {
       const actual = prev[id] || "pendiente";
       const siguiente = actual === "pendiente" ? "regular" : actual === "regular" ? "aprobada" : "pendiente";
       
-      // Llamamos al backend para guardar este cambio específico
       guardarEstadoEnDB(id, siguiente);
       
       return { ...prev, [id]: siguiente };
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
   const logout = () => {
@@ -149,7 +122,7 @@ const cargarTodoLocal = async () => {
       focusMat.id,
       ...(focusMat.correlativas || []),                          
       ...materias
-        .filter(m => (m.correlativas || []).includes(focusMat.id)) // las que desbloquea
+        .filter(m => (m.correlativas || []).includes(focusMat.id))
         .map(m => m.id),
     ])
   : null;
@@ -264,7 +237,6 @@ const cargarTodoLocal = async () => {
                 {materiasAMostrar.map(mat => {
                   const ev = getEstadoVisual(mat, estados);
                   const col = COLORES[ev];
-                  const isHighlighted = highlighted ? highlighted.has(mat.id) : true;
                   const isSelected = selected === mat.id;
                   const est = estados[mat.id] || "pendiente";
 
@@ -281,20 +253,15 @@ const cargarTodoLocal = async () => {
                         border: isSelected
                         ? "2px solid #ffffff55"
                         : highlighted && highlighted.has(mat.id) && mat.id !== focusMat?.id
-                          ? `1px solid ${col.border}cc`     // borde más vivo en relacionadas
+                          ? `1px solid ${col.border}cc`     
                           : `1px solid ${col.border}`,
-                      boxShadow: hover === mat.id
-                        ? `0 0 20px ${col.border}88`
-                        : highlighted && highlighted.has(mat.id) && mat.id !== focusMat?.id
-                          ? `0 0 8px ${col.border}44`       // glow suave en relacionadas
-                          : "none",
                         cursor: "pointer",
                         opacity: !highlighted
-                              ? 0.55                              // estado neutro: todo semi-apagado
+                              ? 0.55                              
                               : mat.id === focusMat?.id
-                                ? 1                               // la que hovereo: 100%
+                                ? 1                               
                                 : highlighted.has(mat.id)
-                                  ? 0.85                          // relacionadas: casi completo
+                                  ? 0.85                          
                                   : 0.12,   
                         transition: "opacity 0.2s ease-out, box-shadow 0.2s ease, border-color 0.2s ease",
                         outline: isSelected ? "2px solid #4466cc" : "none",
@@ -334,25 +301,6 @@ const cargarTodoLocal = async () => {
         </div>
         <div style={{ fontSize: "10px", color: "#556", marginTop: "4px" }}>{aprobadas} de {total} materias aprobadas</div>
       </div>
-    </div>
-  );
-}
-
-// Componentes estéticos
-function Stat({ label, value, color }) {
-  return (
-    <div style={{ textAlign: "center" }}>
-      <div style={{ fontSize: "22px", fontWeight: "700", color, lineHeight: 1 }}>{value}</div>
-      <div style={{ fontSize: "9px", color: "#556", marginTop: "2px" }}>{label}</div>
-    </div>
-  );
-}
-
-function LegendItem({ color, label }) {
-  return (
-    <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "13px", color: "#aaaaee", fontWeight: "500" }}>
-      <div style={{ width: "16px", height: "16px", borderRadius: "4px", border: `2px solid ${color}`, background: color + "22" }} />
-      {label}
     </div>
   );
 }
