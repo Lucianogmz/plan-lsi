@@ -30,8 +30,7 @@ function getEstadoVisual(mat, estados) {
   return "noPuede";
 }
 
-export default function Dashboard() {
-  const [user, setUser] = useState({ id: 1, email: "estudiante@uader.local" });
+export default function Dashboard({ user, onLogout }) {
   const [loading, setLoading] = useState(true);
   const [estados, setEstados] = useState({});
   const [saving, setSaving] = useState(false);
@@ -52,7 +51,7 @@ export default function Dashboard() {
       }));
       setMaterias(materiasLimpias); 
 
-      const dataProg = await fetchProgreso(user.id);
+      const dataProg = await fetchProgreso();
       
       if (Array.isArray(dataProg)) {
         const estadosDesdeDB = {};
@@ -76,7 +75,7 @@ export default function Dashboard() {
   const guardarEstadoEnDB = async (materiaId, nuevoEstado) => {
     try {
       setSaving(true);
-      await saveProgreso(user.id, materiaId, nuevoEstado);
+      await saveProgreso(materiaId, nuevoEstado);
       setSaving(false);
     } catch (error) {
       console.error("Error guardando en la DB:", error);
@@ -96,18 +95,11 @@ export default function Dashboard() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
-  const logout = () => {
-    setUser(null);
-    setEstados({});
-  };
-
   if (loading) return (
     <div style={{ minHeight: "100vh", background: "#0a0a14", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "monospace", color: "#4466cc", fontSize: "12px", letterSpacing: "3px" }}>
       CARGANDO...
     </div>
   );
-
-  if (!user) return <div style={{color: "white", padding: 20}}>Sesión cerrada. (Acá iría el Login local)</div>;
 
   const aprobadas = Object.values(estados).filter(e => e === "aprobada").length;
   const regulares = Object.values(estados).filter(e => e === "regular").length;
@@ -151,7 +143,7 @@ export default function Dashboard() {
             <div style={{ fontSize: "26px", fontWeight: "700", color: "#4466cc", lineHeight: 1 }}>{progreso}%</div>
             <div style={{ fontSize: "9px", color: "#556", marginTop: "2px" }}>completado</div>
           </div>
-          <button onClick={logout} style={{
+          <button onClick={onLogout} style={{
             padding: "6px 14px", background: "transparent", border: "1px solid #3a3a5c",
             color: "#556", borderRadius: "4px", cursor: "pointer", fontFamily: "inherit", fontSize: "10px",
           }}>SALIR</button>

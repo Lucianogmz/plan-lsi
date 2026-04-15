@@ -1,7 +1,8 @@
 const pool = require('../config/db');
 
 const guardarProgreso = async (req, res) => {
-  const { user_id, materia_id, estado } = req.body;
+  const userId = req.userId; // Viene del middleware JWT
+  const { materia_id, estado } = req.body;
 
   try {
     const query = `
@@ -10,7 +11,7 @@ const guardarProgreso = async (req, res) => {
       ON CONFLICT (user_id, materia_id) 
       DO UPDATE SET estado = EXCLUDED.estado, updated_at = CURRENT_TIMESTAMP;
     `;
-    await pool.query(query, [user_id, materia_id, estado]);
+    await pool.query(query, [userId, materia_id, estado]);
     res.status(200).json({ mensaje: "Progreso guardado correctamente" });
   } catch (err) {
     console.error("Error al guardar progreso:", err);
@@ -19,11 +20,11 @@ const guardarProgreso = async (req, res) => {
 };
 
 const obtenerProgreso = async (req, res) => {
-  const { user_id } = req.params;
+  const userId = req.userId; // Viene del middleware JWT
   try {
     const result = await pool.query(
       'SELECT materia_id, estado FROM progreso_usuario WHERE user_id = $1',
-      [user_id]
+      [userId]
     );
     res.json(result.rows);
   } catch (err) {
