@@ -26,6 +26,7 @@ function getEstadoVisual(mat, estados) {
   const e = estados[mat.id];
   if (e === "aprobada") return "aprobada";
   if (e === "regular") return "regular";
+  if (mat.nombre && mat.nombre.toLowerCase().includes("optativa")) return "noPuede";
   if (puedeSerCursada(mat, estados)) return "puedeCursar";
   return "noPuede";
 }
