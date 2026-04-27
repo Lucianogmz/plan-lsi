@@ -9,11 +9,11 @@ const ANIOS = [1, 2, 3, 4, 5];
 const ANIO_LABELS = ["1° Año", "2° Año", "3° Año", "4° Año", "5° Año"];
 
 const COLORES = {
-  pendiente:   { bg: "#1a1a2e", border: "#3a3a5c", text: "#8888aa", badge: "#2a2a4e" },
-  regular:     { bg: "#2d2a15", border: "#b89b25", text: "#ffcc00", badge: "#544614" }, 
-  aprobada:    { bg: "#0a2a1a", border: "#00ff88", text: "#00ff88", badge: "#004422" },
-  puedeCursar: { bg: "#111133", border: "#4488ff", text: "#88aaff", badge: "#111133" },
-  noPuede:     { bg: "#1a1a2e", border: "#2a2a4a", text: "#444466", badge: "#1a1a2e" },
+  pendiente:   { bg: "#111111", border: "#27272a", text: "#a1a1aa", badge: "#27272a" },
+  regular:     { bg: "#181811", border: "#4d4011", text: "#facc15", badge: "#3f350d" }, 
+  aprobada:    { bg: "#0a1c11", border: "#10b981", text: "#10b981", badge: "#064e3b" },
+  puedeCursar: { bg: "#111111", border: "#e4e4e7", text: "#ffffff", badge: "#27272a" },
+  noPuede:     { bg: "#050505", border: "#18181b", text: "#52525b", badge: "#18181b" },
 };
 
 // Funciones de ayuda
@@ -97,7 +97,7 @@ export default function Dashboard({ user, onLogout }) {
   }, [user]);
 
   if (loading) return (
-    <div style={{ minHeight: "100vh", background: "#0a0a14", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "monospace", color: "#4466cc", fontSize: "12px", letterSpacing: "3px" }}>
+    <div style={{ minHeight: "100vh", background: "#050505", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "monospace", color: "#a1a1aa", fontSize: "12px", letterSpacing: "3px" }}>
       CARGANDO...
     </div>
   );
@@ -121,49 +121,49 @@ export default function Dashboard({ user, onLogout }) {
   : null;
 
   return (
-    <div style={{ minHeight: "100vh", background: "#0a0a14", fontFamily: "'Inter', 'Segoe UI', Roboto, Helvetica, sans-serif", color: "#ccc" }}>
+    <div style={{ minHeight: "100vh", background: "#050505", fontFamily: "'Inter', 'Segoe UI', Roboto, Helvetica, sans-serif", color: "#a1a1aa" }}>
 
       {/* Header */}
       <div style={{
-        background: "linear-gradient(135deg, #0d0d1f 0%, #111128 100%)",
-        borderBottom: "1px solid #2a2a4a",
+        background: "#050505",
+        borderBottom: "1px solid #27272a",
         padding: "16px 24px",
         display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "12px",
       }}>
         <div>
-          <div style={{ fontSize: "9px", letterSpacing: "4px", color: "#4466cc", marginBottom: "3px" }}>UADER · FCyT</div>
-          <h1 style={{ margin: 0, fontSize: "16px", fontWeight: "700", color: "#eeeeff" }}>Licenciatura en Sistemas de Información</h1>
-          <div style={{ fontSize: "10px", color: "#556", marginTop: "2px" }}>
-            {user.email} {saving && <span style={{ color: "#4466cc" }}>· guardando...</span>}
+          <div style={{ fontSize: "9px", letterSpacing: "4px", color: "#a1a1aa", marginBottom: "3px" }}>UADER · FCyT</div>
+          <h1 style={{ margin: 0, fontSize: "16px", fontWeight: "700", color: "#ffffff" }}>Licenciatura en Sistemas de Información</h1>
+          <div style={{ fontSize: "10px", color: "#a1a1aa", marginTop: "2px" }}>
+            {user.email} {saving && <span style={{ color: "#ffffff" }}>· guardando...</span>}
           </div>
         </div>
         <div style={{ display: "flex", gap: "20px", alignItems: "center" }}>
-          <Stat label="Aprobadas" value={aprobadas} color="#00ff88" />
-          <Stat label="Regulares" value={regulares} color="#ffcc00" />
+          <Stat label="Aprobadas" value={aprobadas} color="#10b981" />
+          <Stat label="Regulares" value={regulares} color="#facc15" />
           <div style={{ textAlign: "center" }}>
-            <div style={{ fontSize: "26px", fontWeight: "700", color: "#4466cc", lineHeight: 1 }}>{progreso}%</div>
-            <div style={{ fontSize: "9px", color: "#556", marginTop: "2px" }}>completado</div>
+            <div style={{ fontSize: "26px", fontWeight: "700", color: "#ffffff", lineHeight: 1 }}>{progreso}%</div>
+            <div style={{ fontSize: "9px", color: "#a1a1aa", marginTop: "2px" }}>completado</div>
           </div>
           <button onClick={onLogout} style={{
-            padding: "6px 14px", background: "transparent", border: "1px solid #3a3a5c",
-            color: "#556", borderRadius: "4px", cursor: "pointer", fontFamily: "inherit", fontSize: "10px",
+            padding: "6px 14px", background: "#ffffff", border: "none",
+            color: "#000000", borderRadius: "6px", cursor: "pointer", fontFamily: "inherit", fontSize: "10px", fontWeight: "600"
           }}>SALIR</button>
         </div>
       </div>
 
       {/* Legend */}
-      <div style={{ padding: "16px 24px", display: "flex", gap: "24px", borderBottom: "1px solid #1a1a2e", flexWrap: "wrap", alignItems: "center" }}>
-        <LegendItem color="#3a3a5c" label="Pendiente" />
-        <LegendItem color="#00ff88" label="Aprobada" />
-        <LegendItem color="#ffcc00" label="Regular" />
-        <LegendItem color="#4488ff" label="Puede cursar" />
+      <div style={{ padding: "16px 24px", display: "flex", gap: "24px", borderBottom: "1px solid #18181b", flexWrap: "wrap", alignItems: "center" }}>
+        <LegendItem color="#27272a" label="Pendiente" />
+        <LegendItem color="#10b981" label="Aprobada" />
+        <LegendItem color="#facc15" label="Regular" />
+        <LegendItem color="#e4e4e7" label="Puede cursar" />
         <button 
           onClick={() => setFiltroActivo(!filtroActivo)}
           style={{
             marginLeft: "auto", padding: "6px 12px", borderRadius: "6px",
-            background: filtroActivo ? "#4488ff" : "transparent",
-            color: filtroActivo ? "#ffffff" : "#88aaff",
-            border: "1px solid #4488ff", cursor: "pointer",
+            background: filtroActivo ? "#ffffff" : "transparent",
+            color: filtroActivo ? "#000000" : "#a1a1aa",
+            border: filtroActivo ? "1px solid #ffffff" : "1px solid #3f3f46", cursor: "pointer",
             fontSize: "10px", fontWeight: "700", letterSpacing: "1px",
             transition: "all 0.2s ease"
           }}
@@ -177,25 +177,25 @@ export default function Dashboard({ user, onLogout }) {
         {focusMat && (
           <div style={{
             padding: "10px 18px",
-            background: "#111128", border: "1px solid #2a2a5a", borderRadius: "8px",
+            background: "#111111", border: "1px solid #27272a", borderRadius: "8px",
             display: "flex", gap: "20px", alignItems: "center", flexWrap: "wrap",
             animation: "fadeIn 0.2s ease-in-out" 
           }}>
             <div>
-              <span style={{ fontSize: "9px", color: "#4466cc", letterSpacing: "2px" }}>CORRELATIVAS DE </span>
-              <span style={{ fontSize: "13px", color: "#eeeeff", fontWeight: "700" }}>{focusMat.nombre}</span>
+              <span style={{ fontSize: "9px", color: "#a1a1aa", letterSpacing: "2px" }}>CORRELATIVAS DE </span>
+              <span style={{ fontSize: "13px", color: "#ffffff", fontWeight: "700" }}>{focusMat.nombre}</span>
             </div>
             <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
               {!focusMat.correlativas || focusMat.correlativas.length === 0
-                ? <span style={{ fontSize: "11px", color: "#556" }}>Sin correlativas — libre</span>
+                ? <span style={{ fontSize: "11px", color: "#71717a" }}>Sin correlativas — libre</span>
                 : focusMat.correlativas.map(cid => {
                     const m = materias.find(x => x.id === cid);
                     const e = estados[cid] || "pendiente";
                     return (
                       <span key={cid} style={{
                         fontSize: "11px", padding: "3px 10px", borderRadius: "20px",
-                        border: `1px solid ${e === "aprobada" ? "#00ff88" : e === "regular" ? "#ffcc00" : "#3a3a5c"}`,
-                        color: e === "aprobada" ? "#00ff88" : e === "regular" ? "#ffcc00" : "#556",
+                        border: `1px solid ${e === "aprobada" ? "#10b981" : e === "regular" ? "#facc15" : "#27272a"}`,
+                        color: e === "aprobada" ? "#10b981" : e === "regular" ? "#facc15" : "#a1a1aa",
                       }}>{m?.nombre || cid}</span>
                     );
                   })}
@@ -203,7 +203,7 @@ export default function Dashboard({ user, onLogout }) {
             {selected && (
               <button onClick={() => setSelected(null)} style={{
                 marginLeft: "auto", fontSize: "10px", padding: "3px 10px",
-                background: "transparent", border: "1px solid #3a3a5c", color: "#556",
+                background: "transparent", border: "1px solid #3f3f46", color: "#a1a1aa",
                 borderRadius: "4px", cursor: "pointer",
               }}>✕</button>
             )}
@@ -223,7 +223,7 @@ export default function Dashboard({ user, onLogout }) {
 
           return (
             <div key={anio} style={{ marginBottom: "10px" }}>
-              <div style={{ fontSize: "9px", letterSpacing: "3px", color: "#3a3a6a", marginBottom: "6px", textTransform: "uppercase" }}>
+              <div style={{ fontSize: "9px", letterSpacing: "3px", color: "#52525b", marginBottom: "6px", textTransform: "uppercase" }}>
                 ── {ANIO_LABELS[ai]}
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(250px, 1fr))", gap: "12px" }}>
@@ -257,7 +257,7 @@ export default function Dashboard({ user, onLogout }) {
                                   ? 0.85                          
                                   : 0.12,   
                         transition: "opacity 0.2s ease-out, box-shadow 0.2s ease, border-color 0.2s ease",
-                        outline: isSelected ? "2px solid #4466cc" : "none",
+                        outline: isSelected ? "2px solid #ffffff" : "none",
                         outlineOffset: "2px",
                       }}
                     >
@@ -273,7 +273,7 @@ export default function Dashboard({ user, onLogout }) {
                           {est === "aprobada" ? "✓ APR" : est === "regular" ? "REG" : ev === "puedeCursar" ? "→ OK" : "⊘"}
                         </div>
                       </div>
-                      <div style={{ fontSize: "11px", color: "#3a3a6a", marginTop: "5px", display: "flex", gap: "8px" }}>
+                      <div style={{ fontSize: "11px", color: "#71717a", marginTop: "5px", display: "flex", gap: "8px" }}>
                         <span>{mat.cuatrimestre}</span>
                         {mat.correlativas && mat.correlativas.length > 0 && <span>{mat.correlativas.length} correl.</span>}
                       </div>
@@ -288,11 +288,11 @@ export default function Dashboard({ user, onLogout }) {
 
       {/* Barra progreso */}
       <div style={{ padding: "0 24px 32px" }}>
-        <div style={{ fontSize: "9px", color: "#3a3a6a", marginBottom: "5px", letterSpacing: "2px" }}>PROGRESO GENERAL</div>
-        <div style={{ height: "5px", background: "#1a1a2e", borderRadius: "3px", overflow: "hidden" }}>
-          <div style={{ height: "100%", width: `${progreso}%`, background: "linear-gradient(90deg, #004422, #00ff88)", borderRadius: "3px", transition: "width 0.4s ease" }} />
+        <div style={{ fontSize: "9px", color: "#71717a", marginBottom: "5px", letterSpacing: "2px" }}>PROGRESO GENERAL</div>
+        <div style={{ height: "5px", background: "#18181b", borderRadius: "3px", overflow: "hidden" }}>
+          <div style={{ height: "100%", width: `${progreso}%`, background: "linear-gradient(90deg, #052e16, #10b981)", borderRadius: "3px", transition: "width 0.4s ease" }} />
         </div>
-        <div style={{ fontSize: "10px", color: "#556", marginTop: "4px" }}>{aprobadas} de {total} materias aprobadas</div>
+        <div style={{ fontSize: "10px", color: "#a1a1aa", marginTop: "4px" }}>{aprobadas} de {total} materias aprobadas</div>
       </div>
     </div>
   );
