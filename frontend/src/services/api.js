@@ -1,14 +1,5 @@
-import { getToken } from './auth';
-
 const API_URL = import.meta.env.VITE_API_URL || 'https://plan-lsi.onrender.com/api';
-
-const authHeaders = () => {
-  const token = getToken();
-  return {
-    'Content-Type': 'application/json',
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-  };
-};
+const PROGRESO_KEY = 'progreso';
 
 export const fetchMaterias = async () => {
   const res = await fetch(`${API_URL}/materias`);
@@ -16,20 +7,19 @@ export const fetchMaterias = async () => {
   return res.json();
 };
 
-export const fetchProgreso = async () => {
-  const res = await fetch(`${API_URL}/progreso`, {
-    headers: authHeaders(),
-  });
-  if (!res.ok) throw new Error('Error fetching progreso');
-  return res.json();
+// El progreso se guarda en el navegador (localStorage)
+export const fetchProgreso = () => {
+  try {
+    return JSON.parse(localStorage.getItem(PROGRESO_KEY)) || {};
+  } catch {
+    return {};
+  }
 };
 
-export const saveProgreso = async (materiaId, estado) => {
-  const res = await fetch(`${API_URL}/progreso`, {
-    method: 'POST',
-    headers: authHeaders(),
-    body: JSON.stringify({ materia_id: materiaId, estado }),
-  });
-  if (!res.ok) throw new Error('Error saving progreso');
-  return res.json();
+export const saveProgreso = (estados) => {
+  try {
+    localStorage.setItem(PROGRESO_KEY, JSON.stringify(estados));
+  } catch (error) {
+    console.error("Error guardando progreso:", error);
+  }
 };

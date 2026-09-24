@@ -31,70 +31,38 @@ function getEstadoVisual(mat, estados) {
   return "noPuede";
 }
 
-export default function Dashboard({ user, onLogout }) {
+export default function Dashboard() {
   const [loading, setLoading] = useState(true);
-  const [estados, setEstados] = useState({});
-  const [saving, setSaving] = useState(false);
+  const [estados, setEstados] = useState(fetchProgreso);
   const [hover, setHover] = useState(null);
   const [selected, setSelected] = useState(null);
   const [filtroActivo, setFiltroActivo] = useState(false);
   
   const [materias, setMaterias] = useState([]);
 
-  const cargarTodoLocal = async () => {
-    try {
-      const dataMat = await fetchMaterias();
-      
-      const materiasLimpias = dataMat.map(m => ({
-        ...m,
-        id: Number(m.id),
-        correlativas: m.correlativas || []
-      }));
-      setMaterias(materiasLimpias); 
-
-      const dataProg = await fetchProgreso();
-      
-      if (Array.isArray(dataProg)) {
-        const estadosDesdeDB = {};
-        dataProg.forEach(item => {
-          estadosDesdeDB[item.materia_id] = item.estado;
-        });
-        setEstados(estadosDesdeDB);
-      }
-
-      setLoading(false);
-    } catch (error) {
-      console.error("Error cargando datos:", error);
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    cargarTodoLocal();
+    fetchMaterias()
+      .then(dataMat => {
+        const materiasLimpias = dataMat.map(m => ({
+          ...m,
+          id: Number(m.id),
+          correlativas: m.correlativas || []
+        }));
+        setMaterias(materiasLimpias);
+      })
+      .catch(error => console.error("Error cargando datos:", error))
+      .finally(() => setLoading(false));
   }, []);
-
-  const guardarEstadoEnDB = async (materiaId, nuevoEstado) => {
-    try {
-      setSaving(true);
-      await saveProgreso(materiaId, nuevoEstado);
-      setSaving(false);
-    } catch (error) {
-      console.error("Error guardando en la DB:", error);
-      setSaving(false);
-    }
-  };
 
   const ciclarEstado = useCallback((id) => {
     setEstados(prev => {
       const actual = prev[id] || "pendiente";
       const siguiente = actual === "pendiente" ? "regular" : actual === "regular" ? "aprobada" : "pendiente";
-      
-      guardarEstadoEnDB(id, siguiente);
-      
-      return { ...prev, [id]: siguiente };
+      const nuevos = { ...prev, [id]: siguiente };
+      saveProgreso(nuevos);
+      return nuevos;
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
+  }, []);
 
   if (loading) return (
     <div style={{ minHeight: "100vh", background: "#050505", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "monospace", color: "#a1a1aa", fontSize: "12px", letterSpacing: "3px" }}>
@@ -133,9 +101,6 @@ export default function Dashboard({ user, onLogout }) {
         <div>
           <div style={{ fontSize: "9px", letterSpacing: "4px", color: "#a1a1aa", marginBottom: "3px" }}>UADER · FCyT</div>
           <h1 style={{ margin: 0, fontSize: "16px", fontWeight: "700", color: "#ffffff" }}>Licenciatura en Sistemas de Información</h1>
-          <div style={{ fontSize: "10px", color: "#a1a1aa", marginTop: "2px" }}>
-            {user.email} {saving && <span style={{ color: "#ffffff" }}>· guardando...</span>}
-          </div>
         </div>
         <div style={{ display: "flex", gap: "20px", alignItems: "center" }}>
           <Stat label="Aprobadas" value={aprobadas} color="#10b981" />
@@ -144,10 +109,6 @@ export default function Dashboard({ user, onLogout }) {
             <div style={{ fontSize: "26px", fontWeight: "700", color: "#ffffff", lineHeight: 1 }}>{progreso}%</div>
             <div style={{ fontSize: "9px", color: "#a1a1aa", marginTop: "2px" }}>completado</div>
           </div>
-          <button onClick={onLogout} style={{
-            padding: "6px 14px", background: "#ffffff", border: "none",
-            color: "#000000", borderRadius: "6px", cursor: "pointer", fontFamily: "inherit", fontSize: "10px", fontWeight: "600"
-          }}>SALIR</button>
         </div>
       </div>
 
