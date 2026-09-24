@@ -1,12 +1,18 @@
 import { useState, useCallback, useEffect } from "react";
 import Stat from "../components/Stat";
 import LegendItem from "../components/LegendItem";
-import { fetchMaterias, fetchProgreso, saveProgreso } from "../services/api";
+import { fetchMaterias, fetchProgreso, saveProgreso, fetchCarrera, saveCarrera } from "../services/api";
 
 // Constantes globales
 const ESTADOS = { pendiente: "pendiente", regular: "regular", aprobada: "aprobada" };
 const ANIOS = [1, 2, 3, 4, 5];
 const ANIO_LABELS = ["1° Año", "2° Año", "3° Año", "4° Año", "5° Año"];
+
+// Analista: título intermedio (hasta 3° año). Licenciatura: carrera completa.
+const CARRERAS = {
+  analista:     { label: "Analista", titulo: "Analista en Sistemas", anios: 3 },
+  licenciatura: { label: "Licenciatura", titulo: "Licenciatura en Sistemas de Información", anios: 5 },
+};
 
 const COLORES = {
   pendiente:   { bg: "#111111", border: "#27272a", text: "#a1a1aa", badge: "#27272a" },
@@ -37,6 +43,12 @@ export default function Dashboard() {
   const [hover, setHover] = useState(null);
   const [selected, setSelected] = useState(null);
   const [filtroActivo, setFiltroActivo] = useState(false);
+  const [carrera, setCarrera] = useState(() => CARRERAS[fetchCarrera()] ? fetchCarrera() : "licenciatura");
+
+  const cambiarCarrera = (nueva) => {
+    setCarrera(nueva);
+    saveCarrera(nueva);
+  };
   
   const [materias, setMaterias] = useState([]);
 
@@ -70,9 +82,11 @@ export default function Dashboard() {
     </div>
   );
 
-  const aprobadas = Object.values(estados).filter(e => e === "aprobada").length;
-  const regulares = Object.values(estados).filter(e => e === "regular").length;
-  const total = materias.length;
+  const { titulo, anios: aniosCarrera } = CARRERAS[carrera];
+  const materiasCarrera = materias.filter(m => m.anio <= aniosCarrera);
+  const aprobadas = materiasCarrera.filter(m => estados[m.id] === "aprobada").length;
+  const regulares = materiasCarrera.filter(m => estados[m.id] === "regular").length;
+  const total = materiasCarrera.length;
   const progreso = total > 0 ? Math.round((aprobadas / total) * 100) : 0;
 
   const hoveredMat = materias.find(m => m.id === hover);
@@ -100,7 +114,7 @@ export default function Dashboard() {
       }}>
         <div>
           <div style={{ fontSize: "9px", letterSpacing: "4px", color: "#a1a1aa", marginBottom: "3px" }}>UADER · FCyT</div>
-          <h1 style={{ margin: 0, fontSize: "16px", fontWeight: "700", color: "#ffffff" }}>Licenciatura en Sistemas de Información</h1>
+          <h1 style={{ margin: 0, fontSize: "16px", fontWeight: "700", color: "#ffffff" }}>{titulo}</h1>
         </div>
         <div style={{ display: "flex", gap: "20px", alignItems: "center" }}>
           <Stat label="Aprobadas" value={aprobadas} color="#10b981" />
@@ -118,10 +132,27 @@ export default function Dashboard() {
         <LegendItem color="#10b981" label="Aprobada" />
         <LegendItem color="#facc15" label="Regular" />
         <LegendItem color="#e4e4e7" label="Puede cursar" />
-        <button 
+        <div style={{ marginLeft: "auto", display: "flex", padding: "2px", border: "1px solid #3f3f46", borderRadius: "6px" }}>
+          {Object.entries(CARRERAS).map(([key, { label }]) => (
+            <button
+              key={key}
+              onClick={() => cambiarCarrera(key)}
+              style={{
+                padding: "4px 10px", borderRadius: "4px", border: "none", cursor: "pointer",
+                background: carrera === key ? "#ffffff" : "transparent",
+                color: carrera === key ? "#000000" : "#a1a1aa",
+                fontSize: "10px", fontWeight: "700", letterSpacing: "1px", textTransform: "uppercase",
+                transition: "all 0.2s ease"
+              }}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+        <button
           onClick={() => setFiltroActivo(!filtroActivo)}
           style={{
-            marginLeft: "auto", padding: "6px 12px", borderRadius: "6px",
+            padding: "6px 12px", borderRadius: "6px",
             background: filtroActivo ? "#ffffff" : "transparent",
             color: filtroActivo ? "#000000" : "#a1a1aa",
             border: filtroActivo ? "1px solid #ffffff" : "1px solid #3f3f46", cursor: "pointer",
@@ -174,8 +205,8 @@ export default function Dashboard() {
       
       {/* Materias por año */}
       <div style={{ padding: "12px 24px 24px" }}>
-        {ANIOS.map((anio, ai) => {
-          const materiasDelAnio = materias.filter(m => m.anio === anio);
+        {ANIOS.slice(0, aniosCarrera).map((anio, ai) => {
+          const materiasDelAnio = materiasCarrera.filter(m => m.anio === anio);
           const materiasAMostrar = filtroActivo 
             ? materiasDelAnio.filter(mat => getEstadoVisual(mat, estados) === "puedeCursar")
             : materiasDelAnio;

@@ -23,3 +23,21 @@ export const saveProgreso = (estados) => {
     console.error("Error guardando progreso:", error);
   }
 };
+
+const CARRERA_KEY = 'carrera';
+
+export const fetchCarrera = () => {
+  try {
+    return localStorage.getItem(CARRERA_KEY) || 'licenciatura';
+  } catch {
+    return 'licenciatura';
+  }
+};
+
+export const saveCarrera = (carrera) => {
+  try {
+    localStorage.setItem(CARRERA_KEY, carrera);
+  } catch (error) {
+    console.error("Error guardando carrera:", error);
+  }
+};
